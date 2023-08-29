@@ -10,6 +10,7 @@ import Registration from './pages/Registration';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import { ToastContainer, toast } from 'react-toastify';
+import ForgotPassword from './pages/ForgotPassword';
 
 
 const router = createBrowserRouter(
@@ -22,6 +23,11 @@ const router = createBrowserRouter(
           <Route
           path="/login"
          element={<Login/>}
+        />
+
+        <Route
+          path="/forgotpassword"
+         element={<ForgotPassword/>}
         />
 
          <Route

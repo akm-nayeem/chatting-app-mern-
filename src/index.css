@@ -67,3 +67,17 @@
   top: 35px;
   right: 30px;
 }
+
+.forgotpage{
+  background: orange;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.forgotbox{
+  background: #fff;
+  padding: 20px;
+  width: 50%;
+}

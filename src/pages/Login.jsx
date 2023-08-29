@@ -4,7 +4,7 @@ import Image from '../components/Image'
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { Link,useNavigate } from 'react-router-dom';
-import { getAuth, createUserWithEmailAndPassword,sendEmailVerification,signInWithEmailAndPassword   } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword,sendEmailVerification,signInWithEmailAndPassword,GoogleAuthProvider,signInWithPopup   } from "firebase/auth";
 import Alert from '@mui/material/Alert';
 import { AiFillEye,AiFillEyeInvisible } from 'react-icons/ai';
 import { ColorRing } from 'react-loader-spinner'
@@ -15,6 +15,8 @@ import { unstable_renderSubtreeIntoContainer } from 'react-dom';
 
 const Login = () => {
   const auth = getAuth();
+  const provider = new GoogleAuthProvider();
+  
   let navigate = useNavigate()
 
 
@@ -152,12 +154,19 @@ let handleChange = (e)=>{
   
     }
 
+    let handleGoogleLogin = ()=>{
+      signInWithPopup(auth, provider).then(()=>{
+        console.log("Done")
+      })
+    }
+
 
   return (
     <div className='registration'>
         <div className='left'>
          <div className='text-container'>
          <h2>Login to your account!</h2>
+         <Button onClick={handleGoogleLogin} className='regbtn' variant="contained"> Google sign in</Button>
          
           
     
@@ -211,7 +220,7 @@ let handleChange = (e)=>{
       }
 
       <p>Don't have an account ? <Link to="/" className='fucas'>Sign up</Link> </p>
-
+      <p> Forgot Password ? <Link to="/forgotpassword" className='fucas'>Click Here</Link> </p>
          </div>
         </div>
         <div className='right'>
