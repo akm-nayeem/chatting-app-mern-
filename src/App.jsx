@@ -11,6 +11,10 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import { ToastContainer, toast } from 'react-toastify';
 import ForgotPassword from './pages/ForgotPassword';
+import Message from './pages/Message';
+import Notification from './pages/Notification';
+import RootLayout from './components/RootLayout';
+
 
 
 const router = createBrowserRouter(
@@ -30,10 +34,35 @@ const router = createBrowserRouter(
          element={<ForgotPassword/>}
         />
 
+
+
          <Route
+          path="/"
+          element={<RootLayout/>}
+
+
+
+          
+        >
+
+
+<Route
           path="/home"
           element={<Home/>}
         />
+         <Route
+          path="/msg"
+          element={<Message/>}
+        />
+         <Route
+          path="/notification"
+          element={<Notification/>}
+        />
+
+
+        </Route>
+
+        
    </Route>
       
   )

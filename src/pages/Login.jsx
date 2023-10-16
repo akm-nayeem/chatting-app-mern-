@@ -1,32 +1,45 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import bg2 from '../assets/loginbg2.png'
 import Image from '../components/Image'
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { Link,useNavigate } from 'react-router-dom';
-import { getAuth, createUserWithEmailAndPassword,sendEmailVerification,signInWithEmailAndPassword,GoogleAuthProvider,signInWithPopup   } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword,sendEmailVerification,signInWithEmailAndPassword,GoogleAuthProvider,FacebookAuthProvider ,signInWithPopup,   } from "firebase/auth";
+import { getDatabase, ref, set,push } from "firebase/database";
 import Alert from '@mui/material/Alert';
 import { AiFillEye,AiFillEyeInvisible } from 'react-icons/ai';
 import { ColorRing } from 'react-loader-spinner'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { unstable_renderSubtreeIntoContainer } from 'react-dom';
+import { useDispatch,useSelector } from 'react-redux';
+import { logeduser } from '../slices/userSlices';
 
 
 const Login = () => {
   const auth = getAuth();
+  
   const provider = new GoogleAuthProvider();
+  const db = getDatabase();
+  
+  // const provider = new FacebookAuthProvider();
   
   let navigate = useNavigate()
+  let dispatch = useDispatch()
 
+  let data = useSelector(state=> state.logedUser.value)
+
+  useEffect(()=>{
+    if(data){
+      navigate("/home")
+    }
+  },[])
 
 let [formdata,setFormData] = useState({
 
   email:"",
   password:""
 })
-
-
 
 let [emailError,setEmailError] = useState("")
 let [passwordError,setPasswordError] = useState("")
@@ -43,8 +56,6 @@ let handleChange = (e)=>{
 
   })
 
- 
-
   if(e.target.name == "email"){
     setEmailError("")
   }
@@ -52,12 +63,9 @@ let handleChange = (e)=>{
   if(e.target.name == "password"){
     setPasswordError("")
   }
-
-
 }
 
   let handleLogin = ()=>{
-   
    
     if(!formdata.email){
       setEmailError("Email Required")
@@ -69,8 +77,7 @@ let handleChange = (e)=>{
 
     if(formdata.email &&  formdata.password){
 
-     
-      
+       
      setLoad(true)
 
      signInWithEmailAndPassword(auth, formdata.email, formdata.
@@ -79,7 +86,10 @@ let handleChange = (e)=>{
         setLoad(false)
 
         console.log(user.user.emailVerified)
-        if(user.user.emailVerified){
+        // if(user.user.emailVerified){
+          navigate("/home")
+          dispatch(logeduser(user.user))
+          localStorage.setItem("user",JSON.stringify(user.user))
         
           toast.success('Please verify your email for login', {
             position: "bottom-center",
@@ -95,20 +105,20 @@ let handleChange = (e)=>{
             navigate("/home")
           },1000)
 
-        }
+        // }
         
-        else{    
-          toast.error('Please verify your email ', {
-            position: "bottom-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
-            });
-        }
+        // else{    
+        //   toast.error('Please verify your email ', {
+        //     position: "bottom-center",
+        //     autoClose: 5000,
+        //     hideProgressBar: false,
+        //     closeOnClick: true,
+        //     pauseOnHover: true,
+        //     draggable: true,
+        //     progress: undefined,
+        //     theme: "dark",
+        //     });
+        // }
 
 
      })
@@ -155,9 +165,24 @@ let handleChange = (e)=>{
     }
 
     let handleGoogleLogin = ()=>{
-      signInWithPopup(auth, provider).then(()=>{
-        console.log("Done")
+      signInWithPopup(auth, provider).then((user)=>{
+        navigate("/home")
+        dispatch(logeduser(user.user))
+          localStorage.setItem("user",JSON.stringify(user.user))
+      
+        set(push(ref(db, 'users')), {
+          username: user.user.displayName,
+          email: user.user.email,
+          profile_picture : user.user.photoURL
+        });
       })
+    }
+
+    let handleFacebookLogin = ()=>{
+      signInWithPopup(auth, provider).then((result)=>{
+        console.log("facebook log done",result.user)
+      })
+
     }
 
 
@@ -166,8 +191,8 @@ let handleChange = (e)=>{
         <div className='left'>
          <div className='text-container'>
          <h2>Login to your account!</h2>
-         <Button onClick={handleGoogleLogin} className='regbtn' variant="contained"> Google sign in</Button>
-         
+         <Button onClick={handleGoogleLogin} className='loginbtn' variant="contained"> Google sign in</Button>
+         <Button onClick={handleFacebookLogin} className='loginbtn' variant="contained"> Facebook </Button>
           
     
 
@@ -193,6 +218,8 @@ let handleChange = (e)=>{
       }
 
      </div>
+
+     <p> Forgot Password ? <Link to="/forgotpassword" className='fucas'>Click Here</Link> </p>
 
      {passwordError &&  
        <Alert variant="filled" severity="error">
@@ -220,7 +247,7 @@ let handleChange = (e)=>{
       }
 
       <p>Don't have an account ? <Link to="/" className='fucas'>Sign up</Link> </p>
-      <p> Forgot Password ? <Link to="/forgotpassword" className='fucas'>Click Here</Link> </p>
+     
          </div>
         </div>
         <div className='right'>

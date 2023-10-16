@@ -1,16 +1,19 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect} from 'react'
 import bg from '../assets/registrationbg.png'
 import Image from '../components/Image'
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { Link,useNavigate } from 'react-router-dom';
-import { getAuth, createUserWithEmailAndPassword,sendEmailVerification  } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword,sendEmailVerification,updateProfile   } from "firebase/auth";
+import { getDatabase, ref, set,push } from "firebase/database";
 import Alert from '@mui/material/Alert';
 import { AiFillEye,AiFillEyeInvisible } from 'react-icons/ai';
 import { ColorRing } from 'react-loader-spinner'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { unstable_renderSubtreeIntoContainer } from 'react-dom';
+import { useDispatch,useSelector } from 'react-redux';
+import { logeduser } from '../slices/userSlices';
 
 
 
@@ -18,6 +21,7 @@ import { unstable_renderSubtreeIntoContainer } from 'react-dom';
 
 const Registration = () => {
   const auth = getAuth();
+  const db = getDatabase();
   let navigate = useNavigate()
 
 
@@ -34,6 +38,16 @@ let [passwordError,setPasswordError] = useState("")
 let [open,setOpen] = useState(false)
 let [load,setLoad] = useState(false)
 
+
+
+let data = useSelector(state=> state.logedUser.value)
+console.log(data)
+
+  useEffect(()=>{
+    if(data){
+      navigate("/home")
+    }
+  },[])
 
 let handleChange = (e)=>{
 
@@ -92,35 +106,49 @@ let handleChange = (e)=>{
       // }
 
      setLoad(true)
-      createUserWithEmailAndPassword(auth,formdata.email,formdata.password).then(()=>{
+      createUserWithEmailAndPassword(auth,formdata.email,formdata.password).then((user)=>{
 
-        sendEmailVerification(auth.currentUser).then(()=>{
+        updateProfile(auth.currentUser, {
+          displayName: formdata.fullname, 
+          photoURL: "https://firebasestorage.googleapis.com/v0/b/chatting-app-421bd.appspot.com/o/avatar-1577909_960_720.webp?alt=media&token=0f32dccc-77f8-41c1-b46d-5127aa6d392f"
+        }).then(()=>{
+          sendEmailVerification(auth.currentUser).then(()=>{
 
-          setFormData({
-            fullname:"",
-            email:"",
-            password:""
-          })
+            setFormData({
+              fullname:"",
+              email:"",
+              password:""
+            })
+    
+            setLoad(false)
+            // toast("Registration successfull! Please verify your email")
+            toast.success('🦄 Registration successfull ! please verify your email', {
+              position: "bottom-center",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "dark",
+              });
   
-          setLoad(false)
-          // toast("Registration successfull! Please verify your email")
-          toast.success('🦄 Registration successfull ! please verify your email', {
-            position: "bottom-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
-            });
+              setTimeout (()=>{
+                navigate("/login")
+              },1000)
+             
+    
+          
+            }).then(()=>{
+              set(ref(db, 'users/' + user.user.uid ), {
+                username: formdata.fullname,
+                email: formdata.email,
+                profile_picture : "https://firebasestorage.googleapis.com/v0/b/chatting-app-421bd.appspot.com/o/avatar-1577909_960_720.webp?alt=media&token=0f32dccc-77f8-41c1-b46d-5127aa6d392f"
+              }); 
+            })
+        })
 
-            setTimeout (()=>{
-              navigate("/login")
-            },1000)
-           
-  
-        })  .catch((error) => {
+         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
 
